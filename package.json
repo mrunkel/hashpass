@@ -1,0 +1,23 @@
+{
+  "name": "hashpass",
+  "version": "1.0.0",
+  "description": "A quick webpage to create a password hash",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrunkel/hashpass.git"
+  },
+  "author": "Marc A. Runkel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mrunkel/hashpass/issues"
+  },
+  "homepage": "https://github.com/mrunkel/hashpass#readme",
+  "dependencies": {
+    "buefy": "^0.4.0",
+    "vue": "^2.3.4"
+  }
+}
