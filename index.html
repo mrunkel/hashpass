@@ -20,35 +20,62 @@
 </head>
 <body>
 
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Password Hasher</a>
+        </div>
+    </div>
+</nav>
+
+
 <br>
-<div id="hash">
-    <p>Submit the password you'd like to hash. You can optionally add a salt value, but we've already generated one for
+<div id="hash" class="jumbotron">
+    <div class="container">
+        <p>Submit the password you'd like to hash. You can optionally add a salt value, but we've already generated one for
         you.</p>
-    <input v-model="password1">
-    <input v-model="password2">
-    <input v-model="salt">
-    <p>Note: Entering a manual salt is not recommended!</p>
+        <div class="form-group">
+            <label for="password1">Passwords</label>
+            <input type="password" v-model="password1" placeholder="Password" id="password1">
+            <input type="password" v-model="password2" placeholder="Repeat Password" id="password2">
+        </div>
+        <div class="form-group">
+            <label for="salt">Salt</label>
+            <input type="text" v-model="salt" id="salt">
+        </div>
+        <p class="alert-warning">Note: Entering a manual salt is not recommended!</p>
+    </div>
 
-    <br>
-    <P>The resulting hash (including the salt) is: <br><br>{{ hashedPassword }}<br><br> Please email this to the person
-        that requested the hash.</P>
-
-    <p>{{ hashedPassword }}</p>
-    <br>
-    <p> Bonus: Here is the mysql compatible hash of the same password: {{ mysqlPassword }}</p>
-
+    <div class="container">
+        <p>The resulting hash (including the salt) is: <br><br>{{ hashedPassword }}<br><br> Please email this to the person
+        that requested the hash.</p>
+    </div>
+    <div class="container">
+        <p> Bonus: Here is the mysql compatible hash of the same password: {{ mysqlPassword }}</p>
+    </div>
 </div>
 
 
 <P>
+    <!-- include crypto libraries.  crypto-js for sha1, sha512* for sha512crypt
+        if I was a little smarter/less lazy, I could use crypto-js for both, but
+        meh. -->
     <script src="js/crypto-js.js"></script>
+    <script src="js/sha512.js"></script>
+    <script src="js/sha512crypt.js"></script>
+
     <script type="text/javascript">
 
         // Shortcuts
 
         var enc = CryptoJS.enc;
         var sha1 = CryptoJS.SHA1;
-        var sha512 = CryptoJS.SHA512;
 
         function generateSalt(len) {
             var valid = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
@@ -63,9 +90,6 @@
 
         }
 
-        //$hash = crypt($_REQUEST['passwd'], '$6$' . $salt);
-        //$mysql = strtoupper(sha1(sha1($_REQUEST['passwd'], true)));
-
         var hash = new Vue({
             el: '#hash',
             data: {
@@ -78,17 +102,7 @@
                     if ((this.password1 !== this.password2) || this.password1 === "") {
                         return ""
                     } else {
-                        var message = '$6$' + this.salt + this.password1;
-                        var encrypt = sha512.create();
-                        encrypt.update(this.password1);
-                        encrypt.update(this.salt);
-                        encrypt.update(this.password1);
-;
-                        for (var i = 0; i < 5000; ++i) {
-                            message = sha512(message).toString();
-                        }
-
-                        return "$6$" + this.salt + "$" + message.toString()
+                        return sha512crypt(this.password1, this.salt)
                     }
                 },
                 mysqlPassword: function () {
