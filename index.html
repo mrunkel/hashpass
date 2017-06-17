@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Hashpass</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" href="css/bootstrap-theme.css">
+    <!-- vue -->
+    <script src="https://vuejs.org/js/vue.js"></script>
+</head>
+<body>
+
+<br>
+<div id="hash">
+    <p>Submit the password you'd like to hash. You can optionally add a salt value, but we've already generated one for
+        you.</p>
+    <input v-model="password1">
+    <input v-model="password2">
+    <input v-model="salt">
+    <p>Note: Entering a manual salt is not recommended!</p>
+
+    <br>
+    <P>The resulting hash (including the salt) is: <br><br>{{ hashedPassword }}<br><br> Please email this to the person
+        that requested the hash.</P>
+
+    <p>{{ hashedPassword }}</p>
+    <br>
+    <p> Bonus: Here is the mysql compatible hash of the same password: {{ mysqlPassword }}</p>
+
+</div>
+
+
+<P>
+    <script src="js/crypto-js.js"></script>
+    <script type="text/javascript">
+
+        // Shortcuts
+
+        var enc = CryptoJS.enc;
+        var sha1 = CryptoJS.SHA1;
+        var sha512 = CryptoJS.SHA512;
+
+        function generateSalt(len) {
+            var valid = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+                "abcdefghijklmnopqrstuvwxyz./-+_";
+
+            var salt = "";
+            for (var i = 0; i < len; ++i) {
+                salt += valid.charAt(Math.floor(Math.random() * valid.length));
+            }
+
+            return salt
+
+        }
+
+        //$hash = crypt($_REQUEST['passwd'], '$6$' . $salt);
+        //$mysql = strtoupper(sha1(sha1($_REQUEST['passwd'], true)));
+
+        var hash = new Vue({
+            el: '#hash',
+            data: {
+                salt: generateSalt(16),
+                password1: "",
+                password2: "",
+            },
+            computed: {
+                hashedPassword: function () {
+                    if ((this.password1 !== this.password2) || this.password1 === "") {
+                        return ""
+                    } else {
+                        var message = '$6$' + this.salt + this.password1;
+                        var encrypt = sha512.create();
+                        encrypt.update(this.password1);
+                        encrypt.update(this.salt);
+                        encrypt.update(this.password1);
+;
+                        for (var i = 0; i < 5000; ++i) {
+                            message = sha512(message).toString();
+                        }
+
+                        return "$6$" + this.salt + "$" + message.toString()
+                    }
+                },
+                mysqlPassword: function () {
+                    if ((this.password1 !== this.password2) || this.password1 === "") {
+                        return ""
+                    } else {
+                        return sha1(sha1(this.password1)).toString(enc.Hex).toUpperCase()
+                    }
+                }
+            }
+        })
+    </script>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+</body>
+</html>
