@@ -1,29 +1,83 @@
 <template>
     <div id="app">
-        <div class="container">
-            <p>
-                Submit the password you'd like to hash. You can optionally add a salt value, but we've already generated one for
-                you.</p>
-            <div class="form-group">
-                <label for="password1">Passwords</label>
-                <input type="password" v-model="password1" placeholder="Password" id="password1">
-                <input type="password" v-model="password2" placeholder="Repeat Password" id="password2">
+        <div class="tile is-ancestor">
+            <div class="tile is-vertical">
+                <div class="tile">
+                    <div class="tile is parent is-vertical">
+                        <article class="tile is-child notification is-primary">
+                            <p class="title">Password Hasher</p>
+                            <p class="subtitle">Generate a password hash entirely in your browser</p>
+                        </article>
+                    </div>
+                    <div class="tile is-parent">
+                        <article class="tile is-child notification">
+                            <p class="title">Enter your password</p>
+                            <div class="form-group">
+                                <b-field label="Password">
+                                    <b-input type="password" v-model="password1" id="password1" password-reveal></b-input>
+                                </b-field>
+                                <b-field label="Repeat Password">
+                                    <b-input type="password" v-model="password2" id="password2" password-reveal></b-input>
+                                </b-field>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+                <div class="title is-parent">
+                    <article class="title is-child notification">
+                        <p class="title">Unix Password Hash</p>
+                        <div class="content">
+                            {{ hashedPassword }}
+                        </div>
+                    </article>
+                    <article class="title is-child notification">
+                        <p class="title">MySQL Password Hash</p>
+                        <div class="content">
+                            {{ mysqlPassword }}
+                        </div>
+                    </article>
+                    <article class="tile is-child notification is-warning">
+                        <b-field label="Salt">
+                            <b-input type="text"
+                                     v-model="salt" id="salt"
+                                     minlength="16"
+                                     maxlength="16">
+                            </b-input>
+                        </b-field>
+                        <div class="block">
+                            <a class="button">Regenerate Salt</a>
+                        </div>
+                        <p class="content">Note: Entering a manual salt is not recommended!
+                            This salt has been randomly generated for you. It's unlikely you'll come up with a better 16 character string.</p>
+                    </article>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="salt">Salt</label>
-                <input type="text" v-model="salt" id="salt">
-            </div>
-            <p class="alert-warning">Note: Entering a manual salt is not recommended!</p>
-        </div>
+            <div class="tile is-parent is-2">
+                <article class="tile is-child notification is-info">
+                    <p class="title">What this is all about</p>
+                    <div class="content">
+                        What we're do here is:
+                        <ol>
+                            <li>Take your secret password and combine it with the salt.</li>
+                            <li>Convert that into a long number</li>
+                            <li>Perform a specific set of mathematical functions on it.</li>
+                            <li>Turn the resulting number back into a string and display it.</li>
+                        </ol>
+                        <div class="content">
+                        <p>We do this because this is how modern password systems work.  They never store your
+                            actual password, they store the mathematical hash.</p>
 
-        <div class="container">
-            <p>The resulting hash (including the salt) is: <br><br>{{ hashedPassword }}<br><br>
-                Please email this to the person
-                that requested the hash.</p>
-        </div>
-        <div class="container">
-            <p> Bonus: Here is the mysql compatible hash of the same password: {{ mysqlPassword }}</p>
-        </div>
+                        <p>One use in particular for this page is to request a password hash from someone for deployment
+                        via puppet or ansible.  That way the password remains a secret, yet can be deployed to a large
+                            number of servers.</p>
+
+                        <p>Note: When using this page, the password NEVER leaves your computer, all calculations
+                            are done in the browser in javascript.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div> <!-- end of tile -->
     </div>
 </template>
 
@@ -32,8 +86,10 @@
     import CryptoJS from "crypto-js"
     import sha512crypt from "sha512crypt-node"
 
-    let sha1 = CryptoJS.SHA1();
-    let enc = CryptoJS.enc();
+    // short cuts
+    let sha1 = CryptoJS.SHA1;
+    let crypt = sha512crypt.sha512crypt;
+    let enc = CryptoJS.enc;
 
   function generateSalt(len) {
     let valid = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
@@ -57,20 +113,27 @@
         password2: "",
       }
     },
+    methods: {
+      allFieldsReady() {
+        return this.password1 === this.password2 && this.password1 !== ""  && this.salt.length === 16;
+      }
+    },
     computed: {
         hashedPassword: function () {
-          if ((this.password1 !== this.password2) || this.password1 === "") {
-            return ""
-          } else {
-            return sha512crypt(this.password1, this.salt)
+
+          if (this.allFieldsReady()) {
+            return crypt(this.password1, this.salt)
           }
+          return ""
+
         },
         mysqlPassword: function () {
-          if ((this.password1 !== this.password2) || this.password1 === "") {
-            return ""
-          } else {
+
+          if (this.allFieldsReady()) {
             return sha1(sha1(this.password1)).toString(enc.Hex).toUpperCase()
           }
+          return ""
+
         }
     }
   }
@@ -82,7 +145,6 @@
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
   margin-top: 60px;
 }
