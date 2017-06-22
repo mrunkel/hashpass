@@ -13,6 +13,7 @@
     "buefy": "^0.4.2",
     "crypto-js": "^3.1.9-1",
     "sha512crypt-node": "^0.1.0",
+    "vee-validate": "^2.0.0-rc.5",
     "vue": "^2.3.3"
   },
   "devDependencies": {

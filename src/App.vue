@@ -14,11 +14,20 @@
                             <p class="title">Enter your password</p>
                             <div class="form-group">
                                 <b-field label="Password">
-                                    <b-input type="password" v-model="password1" id="password1" password-reveal></b-input>
+                                    <b-input name="password1" type="password" v-model="password1" id="password1"
+                                             password-reveal></b-input>
                                 </b-field>
                                 <b-field label="Repeat Password">
-                                    <b-input type="password" v-model="password2" id="password2" password-reveal></b-input>
+                                    <b-input name="password2" type="password" v-model="password2" id="password2"
+                                             password-reveal v-validate="'required|confirmed:password1'"
+                                             data-vv-as="password"></b-input>
                                 </b-field>
+                                <div class="alert alert-danger" v-show="errors.any()">
+                                    <div v-if="errors.has('password2')">
+                                        {{ errors.first('password2') }}
+                                    </div>
+                                </div>
+
                             </div>
                         </article>
                     </div>
@@ -44,9 +53,7 @@
                                      maxlength="16">
                             </b-input>
                         </b-field>
-                        <div class="block">
-                            <a class="button">Regenerate Salt</a>
-                        </div>
+                        <a class="button is-primary is-inverted" v-on:click="salt = generateSalt(16)" >Regenerate Salt</a>
                         <p class="content">Note: Entering a manual salt is not recommended!
                             This salt has been randomly generated for you. It's unlikely you'll come up with a better 16 character string.</p>
                     </article>
@@ -91,41 +98,45 @@
     let crypt = sha512crypt.sha512crypt;
     let enc = CryptoJS.enc;
 
-  function generateSalt(len) {
-    let valid = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-      "abcdefghijklmnopqrstuvwxyz./-+_";
-
-    let salt = "";
-    for (let i = 0; i < len; ++i) {
-      salt += valid.charAt(Math.floor(Math.random() * valid.length));
-    }
-
-    return salt
-
-  }
 
   export default {
     name: 'app',
     data () {
       return {
-        salt: generateSalt(16),
+        salt: this.generateSalt(16),
         password1: "",
         password2: "",
       }
     },
     methods: {
       allFieldsReady() {
+
         return this.password1 === this.password2 && this.password1 !== ""  && this.salt.length === 16;
+      },
+      generateSalt(len) {
+
+        let valid = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+          "abcdefghijklmnopqrstuvwxyz./-+_";
+
+        let salt = "";
+        for (let i = 0; i < len; ++i) {
+          salt += valid.charAt(Math.floor(Math.random() * valid.length));
+        }
+
+        return salt
       }
     },
     computed: {
+        matchPassword: function () {
+
+          return this.password1 === this.password2
+        },
         hashedPassword: function () {
 
           if (this.allFieldsReady()) {
             return crypt(this.password1, this.salt)
           }
           return ""
-
         },
         mysqlPassword: function () {
 
@@ -133,7 +144,6 @@
             return sha1(sha1(this.password1)).toString(enc.Hex).toUpperCase()
           }
           return ""
-
         }
     }
   }
