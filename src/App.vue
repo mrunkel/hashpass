@@ -22,7 +22,7 @@
                                              password-reveal v-validate="'required|confirmed:password1'"
                                              data-vv-as="password"></b-input>
                                 </b-field>
-                                <div class="alert alert-danger" v-show="errors.any()">
+                                <div class="" v-show="errors.any()">
                                     <div v-if="errors.has('password2')">
                                         {{ errors.first('password2') }}
                                     </div>
@@ -49,10 +49,16 @@
                         <b-field label="Salt">
                             <b-input type="text"
                                      v-model="salt" id="salt"
-                                     minlength="16"
-                                     maxlength="16">
+                                     v-validate="'required|min:16|max:16'"
+                                     data-vv-as="salt"
+                                     name="salt">
                             </b-input>
                         </b-field>
+                        <div class="" v-show="errors.any()">
+                            <div v-if="errors.has('salt')">
+                                {{ errors.first('salt') }}
+                            </div>
+                        </div>
                         <a class="button is-primary is-inverted" v-on:click="salt = generateSalt(16)" >Regenerate Salt</a>
                         <p class="content">Note: Entering a manual salt is not recommended!
                             This salt has been randomly generated for you. It's unlikely you'll come up with a better 16 character string.</p>
