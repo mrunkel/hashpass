@@ -12,6 +12,8 @@ I did it mostly as a way for me to get more familiar with:
 
 You can use the online version at https://hashpasswd.com
 
+![screenshot](https://raw.githubusercontent.com/mrunkel/hashpass/master/screenshot.png)
+
 ## Build Setup
 
 ``` bash
