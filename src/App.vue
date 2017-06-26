@@ -69,7 +69,7 @@
                 <article class="tile is-child notification is-info">
                     <p class="title">What this is all about</p>
                     <div class="content">
-                        What we're do here is:
+                        What we're doing here is:
                         <ol>
                             <li>Take your secret password and combine it with the salt.</li>
                             <li>Convert that into a long number</li>
